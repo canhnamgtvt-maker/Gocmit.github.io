@@ -189,6 +189,18 @@ loadDataFromFirebase();
         window.handleLogin();
     }
 });
+// Nước
+function getPreviousWaterEnd(roomId, currentMonth) {
+    // Tìm tháng trước đó
+    const prevMonth = getPreviousMonthStr(currentMonth);
+    
+    // Tìm trong dữ liệu billings xem tháng trước phòng này có hóa đơn chưa
+    const prevBilling = systemData.billings.find(b => b.roomId === roomId && b.month === prevMonth);
+    
+    // Nếu có, trả về số nước cuối kỳ của tháng trước, nếu không trả về 0
+    return prevBilling ? prevBilling.waterEnd : 0;
+}
+     
     </script>   
     
     <!-- Top Navigation Bar -->
@@ -1723,17 +1735,7 @@ if (typeof saveAllDataToFirebase === 'function') {
                 alert("Vui lòng ghi chỉ số đồng hồ trước khi điều chỉnh trạng thái thanh toán!");
             }
         }
-        // Nước
-function getPreviousWaterEnd(roomId, currentMonth) {
-    // Tìm tháng trước đó
-    const prevMonth = getPreviousMonthStr(currentMonth);
-    
-    // Tìm trong dữ liệu billings xem tháng trước phòng này có hóa đơn chưa
-    const prevBilling = systemData.billings.find(b => b.roomId === roomId && b.month === prevMonth);
-    
-    // Nếu có, trả về số nước cuối kỳ của tháng trước, nếu không trả về 0
-    return prevBilling ? prevBilling.waterEnd : 0;
-}
+        
         // View 4: Rooms Management System
         function renderRooms() {
             const grid = document.getElementById('rooms-grid');
