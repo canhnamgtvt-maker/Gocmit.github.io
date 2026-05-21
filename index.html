@@ -97,7 +97,34 @@ onAuthStateChanged(auth, (user) => {
         
         window.login(email, password);
     };
+<div id="loginModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-gray-100 p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100">
+            <div class="p-8 pb-4 text-center">
+                <h2 class="text-3xl font-extrabold text-gray-800">Chào mừng bạn!</h2>
+                <p class="text-gray-500 mt-2">Vui lòng đăng nhập để tiếp tục</p>
+            </div>
+            
+            <div class="px-8 pb-8">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input id="loginEmail" type="email" placeholder="admin@quanly.com" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                        <input id="loginPass" type="password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+                </div>
+                
+                <button onclick="handleLogin()" class="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition transform hover:-translate-y-0.5 active:scale-95">
+                    Đăng Nhập
+                </button>
+            </div>
+            </div>
+    </div>
 
+    <div id="mainApp" class="hidden">
+        </div>
 // 2. Hàm Lưu dữ liệu đồng bộ
 window.saveAllDataToFirebase = function() {
     const dataToSave = localStorage.getItem('room_manager_data');
@@ -178,34 +205,6 @@ loadDataFromFirebase();
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
-   <div id="loginModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-gray-100 p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100">
-            <div class="p-8 pb-4 text-center">
-                <h2 class="text-3xl font-extrabold text-gray-800">Chào mừng bạn!</h2>
-                <p class="text-gray-500 mt-2">Vui lòng đăng nhập để tiếp tục</p>
-            </div>
-            
-            <div class="px-8 pb-8">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input id="loginEmail" type="email" placeholder="admin@quanly.com" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
-                        <input id="loginPass" type="password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
-                    </div>
-                </div>
-                
-                <button onclick="handleLogin()" class="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition transform hover:-translate-y-0.5 active:scale-95">
-                    Đăng Nhập
-                </button>
-            </div>
-            </div>
-    </div>
-
-    <div id="mainApp" class="hidden">
-        </div>
 
     <!-- Top Navigation Bar -->
     <header class="bg-brand-900 text-white shadow-md no-print">
