@@ -107,7 +107,8 @@ apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
 };
 const app = initializeApp(firebaseConfig);
 window.db = getDatabase(app);
-
+const auth = getAuth(app); // Khởi tạo Auth
+     
 // Hàm login toàn cục
         window.handleLogin = function() {
             const email = document.getElementById('loginEmail').value;
@@ -116,25 +117,7 @@ window.db = getDatabase(app);
                 .catch(err => alert("Lỗi: " + err.message));
         };
 
-        // Kiểm tra đăng nhập
-        const auth = getAuth(app); // Khởi tạo Auth
-     onAuthStateChanged(auth, (user) => {
-    console.log("Trạng thái user:", user); // Dòng này sẽ hiện trong Console
-    // ... code cũ
-         const loginModal = document.getElementById('loginModal');
-    const mainApp = document.getElementById('mainApp');
-
-    if (user) {
-        // Nếu đã đăng nhập: Hiện app, ẩn modal đăng nhập
-        loginModal.style.display = 'none'; 
-        mainApp.classList.remove('hidden');
-        renderDashboard(); // Hàm tải dữ liệu của bạn
-    } else {
-        // Nếu chưa đăng nhập: Hiện modal đăng nhập, ẩn app
-        loginModal.style.display = 'flex';
-        mainApp.classList.add('hidden');
-    }
-});
+        
 // 2. Hàm Lưu dữ liệu đồng bộ
 window.saveAllDataToFirebase = function() {
     const dataToSave = localStorage.getItem('room_manager_data');
@@ -166,6 +149,25 @@ window.saveAllDataToFirebase = function() {
     }
     return Promise.resolve();
 };
+     // Kiểm tra đăng nhập
+        
+     onAuthStateChanged(auth, (user) => {
+    console.log("Trạng thái user:", user); // Dòng này sẽ hiện trong Console
+    // ... code cũ
+         const loginModal = document.getElementById('loginModal');
+    const mainApp = document.getElementById('mainApp');
+
+    if (user) {
+        // Nếu đã đăng nhập: Hiện app, ẩn modal đăng nhập
+        loginModal.style.display = 'none'; 
+        mainApp.classList.remove('hidden');
+        renderDashboard(); // Hàm tải dữ liệu của bạn
+    } else {
+        // Nếu chưa đăng nhập: Hiện modal đăng nhập, ẩn app
+        loginModal.style.display = 'flex';
+        mainApp.classList.add('hidden');
+    }
+});
 // 3. Hàm Tải dữ liệu từ Firebase khi khởi động
 function loadDataFromFirebase() {
     const dataRef = ref(db, 'system_data');
@@ -190,16 +192,11 @@ loadDataFromFirebase();
     }
 });
 // Nước
-function getPreviousWaterEnd(roomId, currentMonth) {
-    // Tìm tháng trước đó
-    const prevMonth = getPreviousMonthStr(currentMonth);
-    
-    // Tìm trong dữ liệu billings xem tháng trước phòng này có hóa đơn chưa
-    const prevBilling = systemData.billings.find(b => b.roomId === roomId && b.month === prevMonth);
-    
-    // Nếu có, trả về số nước cuối kỳ của tháng trước, nếu không trả về 0
-    return prevBilling ? prevBilling.waterEnd : 0;
-}
+window.getPreviousWaterEnd = function(roomId, currentMonth) {
+        const prevMonth = getPreviousMonthStr(currentMonth);
+        const prevBilling = systemData.billings.find(b => b.roomId === roomId && b.month === prevMonth);
+        return prevBilling ? prevBilling.waterEnd : 0;
+    }
      
     </script>   
     
