@@ -72,20 +72,28 @@ window.saveAllDataToFirebase = function() {
     if (dataToSave) {
         let rawData = JSON.parse(dataToSave);
         
-        // --- BƯỚC LÀM SẠCH DỮ LIỆU ---
-        // Thay thế dấu '.' bằng dấu '_' trong tất cả các key của billings
-        if (rawData.billings) {
-            for (let month in rawData.billings) {
-                let monthData = rawData.billings[month];
-                let cleanMonthData = {};
-                for (let roomKey in monthData) {
-                    // Chuyển P.101 thành P_101
-                    let cleanKey = roomKey.replace(/\./g, '_'); 
-                    cleanMonthData[cleanKey] = monthData[roomKey];
-                }
-                rawData.billings[month] = cleanMonthData;
+        // HÀM ĐỆ QUY LÀM SẠCH KEY CÓ CHỨA DẤU CHẤM
+        function cleanKeys(obj) {
+            if (typeof obj !== 'object' || obj === null) return obj;
+            let newObj = Array.isArray(obj) ? [] : {};
+            for (let key in obj) {
+                // Thay thế dấu chấm bằng dấu gạch dưới
+                let cleanKey = key.replace(/\./g, '_');
+                newObj[cleanKey] = cleanKeys(obj[key]);
             }
+            return newObj;
         }
+
+        let cleanedData = cleanKeys(rawData);
+
+        return set(ref(db, 'system_data'), cleanedData)
+            .then(() => console.log("Đã đồng bộ sạch sẽ lên Firebase!"))
+            .catch(err => {
+                console.error("Lỗi đồng bộ:", err);
+                alert("Lỗi khi lưu dữ liệu: " + err.message);
+            });
+    }
+};
         // -----------------------------
 
         return set(ref(db, 'system_data'), rawData)
