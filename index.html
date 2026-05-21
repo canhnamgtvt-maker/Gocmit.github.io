@@ -71,14 +71,13 @@ window.saveAllDataToFirebase = function() {
     const dataToSave = localStorage.getItem('room_manager_data');
     if (dataToSave) {
         let rawData = JSON.parse(dataToSave);
-        
-        // HÀM ĐỆ QUY LÀM SẠCH KEY CÓ CHỨA DẤU CHẤM
+
+        // Hàm đệ quy để thay thế dấu '.' bằng '_' trong mọi cấp của dữ liệu
         function cleanKeys(obj) {
             if (typeof obj !== 'object' || obj === null) return obj;
             let newObj = Array.isArray(obj) ? [] : {};
             for (let key in obj) {
-                // Thay thế dấu chấm bằng dấu gạch dưới
-                let cleanKey = key.replace(/\./g, '_');
+                let cleanKey = key.replace(/\./g, '_'); // Thay dấu '.' thành '_'
                 newObj[cleanKey] = cleanKeys(obj[key]);
             }
             return newObj;
@@ -86,8 +85,9 @@ window.saveAllDataToFirebase = function() {
 
         let cleanedData = cleanKeys(rawData);
 
+        // Gửi dữ liệu đã làm sạch lên Firebase
         return set(ref(db, 'system_data'), cleanedData)
-            .then(() => console.log("Đã đồng bộ sạch sẽ lên Firebase!"))
+            .then(() => console.log("Đã đồng bộ dữ liệu sạch lên Firebase!"))
             .catch(err => {
                 console.error("Lỗi đồng bộ:", err);
                 alert("Lỗi khi lưu dữ liệu: " + err.message);
