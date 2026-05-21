@@ -149,21 +149,21 @@ window.saveAllDataToFirebase = function() {
     }
     return Promise.resolve();
 };
-     // Kiểm tra đăng nhập
-        
-     onAuthStateChanged(auth, (user) => {
-    console.log("Trạng thái user:", user); // Dòng này sẽ hiện trong Console
-    // ... code cũ
-         const loginModal = document.getElementById('loginModal');
+     // Kiểm tra trạng thái đăng nhập
+onAuthStateChanged(auth, (user) => {
+    console.log("Trạng thái user:", user);
+    const loginModal = document.getElementById('loginModal');
     const mainApp = document.getElementById('mainApp');
 
     if (user) {
-        // Nếu đã đăng nhập: Hiện app, ẩn modal đăng nhập
+        // Nếu đã đăng nhập thành công:
         loginModal.style.display = 'none'; 
         mainApp.classList.remove('hidden');
-        renderDashboard(); // Hàm tải dữ liệu của bạn
+        
+        // CHỈ GỌI tải dữ liệu từ Firebase sau khi xác thực thành công
+        loadDataFromFirebase(); 
     } else {
-        // Nếu chưa đăng nhập: Hiện modal đăng nhập, ẩn app
+        // Nếu chưa đăng nhập hoặc đăng xuất: Hiện khung đăng nhập, ẩn app chính
         loginModal.style.display = 'flex';
         mainApp.classList.add('hidden');
     }
@@ -184,7 +184,7 @@ function loadDataFromFirebase() {
     }, { onlyOnce: true }); // Chỉ tải một lần khi mở web
 }
 // THÊM DÒNG NÀY ĐỂ GỌI HÀM KHI MỞ TRANG
-loadDataFromFirebase();
+// loadDataFromFirebase();
         // Thêm vào trong script của bạn
         document.addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
