@@ -88,8 +88,8 @@
         }
 // 1. Cấu hình Firebase (Như cũ)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
         
 const firebaseConfig = {  
 apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
@@ -115,16 +115,20 @@ window.db = getDatabase(app);
 
         // Kiểm tra đăng nhập
         onAuthStateChanged(auth, (user) => {
-            const modal = document.getElementById('loginModal');
-            const mainApp = document.getElementById('mainApp');
-            if (user) {
-                modal.style.display = 'none';
-                mainApp.classList.remove('hidden');
-            } else {
-                modal.style.display = 'flex';
-                mainApp.classList.add('hidden');
-            }
-        });
+    const loginModal = document.getElementById('loginModal');
+    const mainApp = document.getElementById('mainApp');
+
+    if (user) {
+        // Nếu đã đăng nhập: Hiện app, ẩn modal đăng nhập
+        loginModal.style.display = 'none'; 
+        mainApp.classList.remove('hidden');
+        renderDashboard(); // Hàm tải dữ liệu của bạn
+    } else {
+        // Nếu chưa đăng nhập: Hiện modal đăng nhập, ẩn app
+        loginModal.style.display = 'flex';
+        mainApp.classList.add('hidden');
+    }
+});
 // 2. Hàm Lưu dữ liệu đồng bộ
 window.saveAllDataToFirebase = function() {
     const dataToSave = localStorage.getItem('room_manager_data');
