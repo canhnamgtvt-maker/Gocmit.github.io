@@ -56,20 +56,24 @@ apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
   measurementId: "G-08TFQFP40M" 
 };
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 const auth = getAuth(app); // Khởi tạo Auth
+window.db = getDatabase(app);
+
 // BẮT BUỘC: Kiểm tra trạng thái ngay sau khi khởi tạo
 onAuthStateChanged(auth, (user) => {
-    const modal = document.getElementById('loginModal');
-    const mainApp = document.getElementById('mainApp');
-    if (user) {
-        modal.classList.add('hidden');
-        mainApp.classList.remove('hidden');
-    } else {
-        modal.classList.remove('hidden');
-        mainApp.classList.add('hidden');
-    }
-});        
+        const modal = document.getElementById('loginModal');
+        const mainApp = document.getElementById('mainApp');
+        
+        if (!modal || !mainApp) return; // Bảo vệ nếu chưa tìm thấy element
+
+        if (user) {
+            modal.style.display = 'none'; // Dùng style trực tiếp cho chắc chắn
+            mainApp.classList.remove('hidden');
+        } else {
+            modal.style.display = 'flex'; // Hiện modal
+            mainApp.classList.add('hidden');
+        }
+    });        
 // Hàm đăng nhập
     window.login = function(email, password) {
         signInWithEmailAndPassword(auth, email, password)
