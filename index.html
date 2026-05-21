@@ -38,7 +38,7 @@
 // 1. Cấu hình Firebase (Như cũ)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 const firebaseConfig = {  
 apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
   authDomain: "qlnt-e6dc0.firebaseapp.com",
@@ -51,16 +51,19 @@ apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(); // Khởi tạo Auth
-// Hàm đăng nhập
-    window.login = function(email, password) {
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            alert("Đăng nhập thành công! Bạn đã có quyền nhập liệu.");
-            // Ẩn bảng đăng nhập (nếu bạn tạo) sau khi thành công
+const auth = getAuth(app); // Khởi tạo Auth
+// 3. Hàm Đăng nhập cho Modal
+    window.handleLogin = function() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+
+        signInWithEmailAndPassword(auth, email, pass)
+          .then(() => {
+            alert("Đăng nhập thành công!");
+            document.getElementById('loginModal').classList.add('hidden'); 
           })
           .catch((error) => {
-            alert("Sai thông tin đăng nhập: " + error.message);
+            alert("Sai thông tin: " + error.message);
           });
     }
 // 2. Hàm Lưu dữ liệu đồng bộ
@@ -94,45 +97,39 @@ window.saveAllDataToFirebase = function() {
     }
     return Promise.resolve();
 };
-// 3. Hàm Tải dữ liệu từ Firebase khi khởi động
-function loadDataFromFirebase() {
-    const dataRef = ref(db, 'system_data');
-    onValue(dataRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            // Cập nhật lại localStorage để luôn có dữ liệu mới nhất
-            localStorage.setItem('room_manager_data', JSON.stringify(data));
-            // Cập nhật biến systemData trong ứng dụng của bạn
-            systemData = data; 
-            renderDashboard(); // Gọi lại hàm hiển thị của bạn
-            console.log("Đã tải dữ liệu từ Firebase!");
+// 4. Các hàm dữ liệu
+    window.saveAllDataToFirebase = function() {
+        const dataToSave = localStorage.getItem('room_manager_data');
+        if (dataToSave) {
+            let rawData = JSON.parse(dataToSave);
+            if (rawData.billings) {
+                for (let month in rawData.billings) {
+                    let monthData = rawData.billings[month];
+                    let cleanMonthData = {};
+                    for (let roomKey in monthData) {
+                        let cleanKey = roomKey.replace(/\./g, '_'); 
+                        cleanMonthData[cleanKey] = monthData[roomKey];
+                    }
+                    rawData.billings[month] = cleanMonthData;
+                }
+            }
+            return set(ref(db, 'system_data'), rawData);
         }
-    }, { onlyOnce: true }); // Chỉ tải một lần khi mở web
-}
-// THÊM DÒNG NÀY ĐỂ GỌI HÀM KHI MỞ TRANG
-loadDataFromFirebase();
-       // 1. Import các hàm cần thiết từ Firebase
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    };
 
-    // 2. Khởi tạo Auth
-    const auth = getAuth();
+    function loadDataFromFirebase() {
+        const dataRef = ref(db, 'system_data');
+        onValue(dataRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                localStorage.setItem('room_manager_data', JSON.stringify(data));
+                // systemData = data; // Đảm bảo biến này được khai báo ở đâu đó
+                if(typeof renderDashboard === 'function') renderDashboard();
+            }
+        }, { onlyOnce: true });
+    }
 
-    // 3. Khai báo hàm handleLogin
-    window.handleLogin = function() {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPass').value;
-
-        signInWithEmailAndPassword(auth, email, pass)
-          .then((userCredential) => {
-            alert("Đăng nhập thành công!");
-            // Đóng cửa sổ bằng cách thêm class hidden
-            document.getElementById('loginModal').classList.add('hidden'); 
-          })
-          .catch((error) => {
-            alert("Sai email hoặc mật khẩu! Vui lòng thử lại.");
-            console.error(error); // Kiểm tra lỗi chi tiết trong F12
-          });
-    } 
+    loadDataFromFirebase();
     </script>
     <style>
         /* Tối ưu in ấn hóa đơn */
