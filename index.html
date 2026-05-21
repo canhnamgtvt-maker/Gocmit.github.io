@@ -114,6 +114,7 @@ window.db = getDatabase(app);
 
         // Kiểm tra đăng nhập
         onAuthStateChanged(auth, (user) => {
+           const modal = document.getElementById('loginModal');
             const modal = document.getElementById('loginModal');
             const mainApp = document.getElementById('mainApp');
             if (user) {
