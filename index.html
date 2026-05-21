@@ -38,7 +38,8 @@
 // 1. Cấu hình Firebase (Như cũ)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        
 const firebaseConfig = {  
 apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
   authDomain: "qlnt-e6dc0.firebaseapp.com",
@@ -51,7 +52,19 @@ apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(); // Khởi tạo Auth
+const auth = getAuth(app); // Khởi tạo Auth
+// BẮT BUỘC: Kiểm tra trạng thái ngay sau khi khởi tạo
+onAuthStateChanged(auth, (user) => {
+    const modal = document.getElementById('loginModal');
+    const mainApp = document.getElementById('mainApp');
+    if (user) {
+        modal.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+    } else {
+        modal.classList.remove('hidden');
+        mainApp.classList.add('hidden');
+    }
+});        
 // Hàm đăng nhập
     window.login = function(email, password) {
         signInWithEmailAndPassword(auth, email, password)
