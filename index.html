@@ -68,17 +68,30 @@ const auth = getAuth(); // Khởi tạo Auth
 window.saveAllDataToFirebase = function() {
     const dataToSave = localStorage.getItem('room_manager_data');
     if (dataToSave) {
-        // Cần thêm 'return' ở đây để trả về Promise
-        return set(ref(db, 'system_data'), JSON.parse(dataToSave))
+        let parsedData = JSON.parse(dataToSave);
+        
+        // BƯỚC QUAN TRỌNG: Loại bỏ hoặc thay thế dấu chấm trong các key
+        // Firebase không cho phép key chứa dấu chấm.
+        // Giả sử billings là một mảng, hãy đảm bảo các trường month không chứa dấu chấm
+        if (parsedData.billings) {
+            parsedData.billings = parsedData.billings.map(b => {
+                return {
+                    ...b,
+                    // Thay thế dấu chấm bằng gạch ngang hoặc gạch dưới nếu có
+                    month: b.month ? b.month.replace(/\./g, '-') : b.month
+                };
+            });
+        }
+
+        return set(ref(db, 'system_data'), parsedData)
             .then(() => {
-                console.log("Đã đồng bộ lên Firebase!");
+                console.log("Đã đồng bộ lên Firebase thành công!");
             })
             .catch(err => {
                 console.error("Lỗi đồng bộ:", err);
-                throw err; // Ném lỗi ra ngoài để hàm bên dưới có thể bắt được
+                throw err;
             });
     }
-    // Trả về một Promise rỗng nếu không có dữ liệu để tránh lỗi
     return Promise.resolve();
 };
 // 3. Hàm Tải dữ liệu từ Firebase khi khởi động
