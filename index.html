@@ -105,26 +105,6 @@ window.saveAllDataToFirebase = function() {
     }
     return Promise.resolve();
 };
-// 4. Các hàm dữ liệu
-    window.saveAllDataToFirebase = function() {
-        const dataToSave = localStorage.getItem('room_manager_data');
-        if (dataToSave) {
-            let rawData = JSON.parse(dataToSave);
-            if (rawData.billings) {
-                for (let month in rawData.billings) {
-                    let monthData = rawData.billings[month];
-                    let cleanMonthData = {};
-                    for (let roomKey in monthData) {
-                        let cleanKey = roomKey.replace(/\./g, '_'); 
-                        cleanMonthData[cleanKey] = monthData[roomKey];
-                    }
-                    rawData.billings[month] = cleanMonthData;
-                }
-            }
-            return set(ref(db, 'system_data'), rawData);
-        }
-    };
-
     function loadDataFromFirebase() {
         const dataRef = ref(db, 'system_data');
         onValue(dataRef, (snapshot) => {
