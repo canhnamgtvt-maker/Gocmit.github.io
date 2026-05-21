@@ -69,21 +69,22 @@ window.saveAllDataToFirebase = function() {
     const dataToSave = localStorage.getItem('room_manager_data');
     if (dataToSave) {
         let parsedData = JSON.parse(dataToSave);
-        
-        // BƯỚC QUAN TRỌNG: Loại bỏ hoặc thay thế dấu chấm trong các key
-        // Firebase không cho phép key chứa dấu chấm.
-        // Giả sử billings là một mảng, hãy đảm bảo các trường month không chứa dấu chấm
-        if (parsedData.billings) {
-            parsedData.billings = parsedData.billings.map(b => {
-                return {
-                    ...b,
-                    // Thay thế dấu chấm bằng gạch ngang hoặc gạch dưới nếu có
-                    month: b.month ? b.month.replace(/\./g, '-') : b.month
-                };
-            });
+
+        // Hàm đệ quy để loại bỏ dấu chấm trong mọi key của object
+        function sanitizeKeys(obj) {
+            if (typeof obj !== 'object' || obj === null) return obj;
+            
+            return Object.keys(obj).reduce((acc, key) => {
+                // Thay thế dấu chấm bằng dấu gạch dưới hoặc dấu gạch ngang
+                const newKey = key.replace(/\./g, '_'); 
+                acc[newKey] = sanitizeKeys(obj[key]);
+                return acc;
+            }, Array.isArray(obj) ? [] : {});
         }
 
-        return set(ref(db, 'system_data'), parsedData)
+        const cleanData = sanitizeKeys(parsedData);
+
+        return set(ref(db, 'system_data'), cleanData)
             .then(() => {
                 console.log("Đã đồng bộ lên Firebase thành công!");
             })
