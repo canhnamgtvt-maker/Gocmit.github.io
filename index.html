@@ -68,136 +68,148 @@
     <div id="mainApp" class="hidden">
         </div>
  <script type="module">
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f5f3ff',
-                            100: '#ede9fe',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81',
-                        }
-                    }
-                }
-            }
-        }
-// 1. Cấu hình Firebase (Như cũ)
-// Thay đổi đoạn import của bạn thành:
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-// THÊM CÁC DÒNG NÀY ĐỂ DÙNG Realtime Database:
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
         
-const firebaseConfig = {  
-apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
-  authDomain: "qlnt-e6dc0.firebaseapp.com",
-  databaseURL: "https://qlnt-e6dc0-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "qlnt-e6dc0",
-  storageBucket: "qlnt-e6dc0.firebasestorage.app",
-  messagingSenderId: "7619122348",
-  appId: "1:7619122348:web:adeb39fbec27838e153b09",
-  measurementId: "G-08TFQFP40M" 
-};
-const app = initializeApp(firebaseConfig);
-window.db = getDatabase(app);
-const auth = getAuth(app); // Khởi tạo Auth
-     
-// Hàm login toàn cục
-        window.handleLogin = function() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPass').value;
-            signInWithEmailAndPassword(auth, email, password)
-                .catch(err => alert("Lỗi: " + err.message));
+        const firebaseConfig = {  
+            apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
+            authDomain: "qlnt-e6dc0.firebaseapp.com",
+            databaseURL: "https://qlnt-e6dc0-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "qlnt-e6dc0",
+            storageBucket: "qlnt-e6dc0.firebasestorage.app",
+            messagingSenderId: "7619122348",
+            appId: "1:7619122348:web:adeb39fbec27838e153b09",
+            measurementId: "G-08TFQFP40M" 
         };
 
-        
-// 2. Hàm Lưu dữ liệu đồng bộ
-window.saveAllDataToFirebase = function() {
-    const dataToSave = localStorage.getItem('room_manager_data');
-    if (dataToSave) {
-        let parsedData = JSON.parse(dataToSave);
+        // Khởi tạo các dịch vụ nền tảng đám mây
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
 
-        // Hàm đệ quy để loại bỏ dấu chấm trong mọi key của object
-        function sanitizeKeys(obj) {
-            if (typeof obj !== 'object' || obj === null) return obj;
+        // Xuất biến db ra cửa sổ toàn cục để các hàm script thường phía dưới sử dụng được
+        window.db = db;
+
+        // 1. HÀM ĐĂNG NHẬP (Gắn trực tiếp vào window để mã HTML gọi được)
+        window.handleLogin = function() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPass').value;
             
-            return Object.keys(obj).reduce((acc, key) => {
-                // Thay thế dấu chấm bằng dấu gạch dưới hoặc dấu gạch ngang
-                const newKey = key.replace(/\./g, '_'); 
-                acc[newKey] = sanitizeKeys(obj[key]);
-                return acc;
-            }, Array.isArray(obj) ? [] : {});
+            if (!email || !password) {
+                alert("Vui lòng điền đầy đủ thông tin Email và Mật khẩu!");
+                return;
+            }
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Đăng nhập thành công!", userCredential.user);
+                })
+                .catch(err => {
+                    let errorMessage = "Đăng nhập thất bại!";
+                    if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+                        errorMessage = "Sai tài khoản hoặc mật khẩu, vui lòng kiểm tra lại!";
+                    } else if (err.code === "auth/invalid-email") {
+                        errorMessage = "Định dạng email không hợp lệ!";
+                    }
+                    alert("Lỗi: " + errorMessage);
+                });
+        };
+
+        // 2. HÀM ĐĂNG XUẤT (Giúp test quay lại màn hình đăng nhập nhanh chóng)
+        window.handleLogout = function() {
+            if (confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
+                signOut(auth).then(() => {
+                    localStorage.removeItem('room_manager_data');
+                    alert("Đã đăng xuất thành công!");
+                    location.reload();
+                }).catch(err => alert("Lỗi khi đăng xuất: " + err.message));
+            }
+        };
+
+        // 3. HÀM ĐỒNG BỘ DỮ LIỆU LÊN FIREBASE (Lưu dữ liệu)
+        window.saveAllDataToFirebase = function() {
+            const dataToSave = localStorage.getItem('room_manager_data');
+            if (dataToSave) {
+                let parsedData = JSON.parse(dataToSave);
+
+                // Loại bỏ các ký tự đặc biệt chứa dấu chấm (.) trong key để tránh lỗi cấu trúc Realtime DB
+                function sanitizeKeys(obj) {
+                    if (typeof obj !== 'object' || obj === null) return obj;
+                    return Object.keys(obj).reduce((acc, key) => {
+                        const newKey = key.replace(/\./g, '_'); 
+                        acc[newKey] = sanitizeKeys(obj[key]);
+                        return acc;
+                    }, Array.isArray(obj) ? [] : {});
+                }
+
+                const cleanData = sanitizeKeys(parsedData);
+
+                return set(ref(db, 'system_data'), cleanData)
+                    .then(() => { console.log("Đã đồng bộ lên Firebase đám mây!"); })
+                    .catch(err => { console.error("Lỗi đồng bộ:", err); throw err; });
+            }
+            return Promise.resolve();
+        };
+
+        // 4. HÀM TẢI DỮ LIỆU TỪ FIREBASE (Chỉ chạy sau khi kiểm tra Auth thành công)
+        function loadDataFromFirebase() {
+            const dataRef = ref(db, 'system_data');
+            onValue(dataRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    // Đồng bộ dữ liệu vào LocalStorage và cập nhật biến toàn cục hệ thống
+                    localStorage.setItem('room_manager_data', JSON.stringify(data));
+                    window.systemData = data; 
+                    
+                    // Thực hiện nạp bộ lọc và vẽ lại toàn bộ giao diện bằng các hàm có sẵn của bạn
+                    if (typeof window.populateRoomFilters === 'function') window.populateRoomFilters();
+                    if (typeof window.renderAllViews === 'function') window.renderAllViews();
+                    
+                    console.log("Cập nhật dữ liệu hệ thống từ Firebase thành công!");
+                } else {
+                    // Nếu trên Firebase trống (mới thiết lập), chạy giao diện mặc định
+                    if (typeof window.renderAllViews === 'function') window.renderAllViews();
+                }
+            }, { onlyOnce: true });
         }
 
-        const cleanData = sanitizeKeys(parsedData);
+        // 5. GIÁM SÁT TRẠNG THÁI ĐĂNG NHẬP (Luồng điều phối giao diện chính)
+        onAuthStateChanged(auth, (user) => {
+            console.log("Kiểm tra trạng thái User hệ thống:", user);
+            const loginModal = document.getElementById('loginModal');
+            const mainApp = document.getElementById('mainApp');
 
-        return set(ref(db, 'system_data'), cleanData)
-            .then(() => {
-                console.log("Đã đồng bộ lên Firebase thành công!");
-            })
-            .catch(err => {
-                console.error("Lỗi đồng bộ:", err);
-                throw err;
-            });
-    }
-    return Promise.resolve();
-};
-     // Kiểm tra trạng thái đăng nhập
-onAuthStateChanged(auth, (user) => {
-    console.log("Trạng thái user:", user);
-    const loginModal = document.getElementById('loginModal');
-    const mainApp = document.getElementById('mainApp');
+            if (user) {
+                // ĐÃ ĐĂNG NHẬP: Ẩn Form đăng nhập, mở Ứng dụng chính và kéo dữ liệu về
+                if (loginModal) loginModal.style.display = 'none'; 
+                if (mainApp) mainApp.classList.remove('hidden');
+                
+                loadDataFromFirebase();
+            } else {
+                // CHƯA ĐĂNG NHẬP: Hiện Form đăng nhập lên màn hình, khóa Ứng dụng chính
+                if (loginModal) loginModal.style.display = 'flex';
+                if (mainApp) mainApp.classList.add('hidden');
+            }
+        });
 
-    if (user) {
-        // Nếu đã đăng nhập thành công:
-        loginModal.style.display = 'none'; 
-        mainApp.classList.remove('hidden');
-        
-        // CHỈ GỌI tải dữ liệu từ Firebase sau khi xác thực thành công
-        loadDataFromFirebase(); 
-    } else {
-        // Nếu chưa đăng nhập hoặc đăng xuất: Hiện khung đăng nhập, ẩn app chính
-        loginModal.style.display = 'flex';
-        mainApp.classList.add('hidden');
-    }
-});
-// 3. Hàm Tải dữ liệu từ Firebase khi khởi động
-function loadDataFromFirebase() {
-    const dataRef = ref(db, 'system_data');
-    onValue(dataRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            // Cập nhật lại localStorage để luôn có dữ liệu mới nhất
-            localStorage.setItem('room_manager_data', JSON.stringify(data));
-            // Cập nhật biến systemData trong ứng dụng của bạn
-            systemData = data; 
-            renderDashboard(); // Gọi lại hàm hiển thị của bạn
-            console.log("Đã tải dữ liệu từ Firebase!");
-        }
-    }, { onlyOnce: true }); // Chỉ tải một lần khi mở web
-}
-// THÊM DÒNG NÀY ĐỂ GỌI HÀM KHI MỞ TRANG
-// loadDataFromFirebase();
-        // Thêm vào trong script của bạn
+        // Bắt phím Enter hỗ trợ đăng nhập nhanh cho người dùng
         document.addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-        window.handleLogin();
-    }
-});
-// Nước
-window.getPreviousWaterEnd = function(roomId, currentMonth) {
-        const prevMonth = getPreviousMonthStr(currentMonth);
-        const prevBilling = systemData.billings.find(b => b.roomId === roomId && b.month === prevMonth);
-        return prevBilling ? prevBilling.waterEnd : 0;
-    }
-     
+            if (event.key === "Enter") {
+                const loginModal = document.getElementById('loginModal');
+                if (loginModal && loginModal.style.display !== 'none') {
+                    window.handleLogin();
+                }
+            }
+        });
+
+        // Hàm lấy chỉ số nước tháng trước đồng bộ
+        window.getPreviousWaterEnd = function(roomId, currentMonth) {
+            if (!window.systemData || !window.systemData.billings) return 0;
+            const prevMonth = getPreviousMonthStr(currentMonth);
+            const prevBilling = window.systemData.billings.find(b => b.roomId === roomId && b.month === prevMonth);
+            return prevBilling ? prevBilling.waterEnd : 0;
+        };
     </script>   
     
     <!-- Top Navigation Bar -->
