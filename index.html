@@ -1897,7 +1897,9 @@ if (typeof saveAllDataToFirebase === 'function') {
             const billings = systemData.billings[monthKey] || {};
             const bill = billings[roomId];
             const room = systemData.rooms.find(r => r.id === roomId);
-
+            const safeMonthKey = monthKey.replace(/\./g, '-');
+            const billings = systemData.billings[safeMonthKey] || {};
+            const bill = billings[roomId];
             if (!bill || !room) {
                 alert("Vui lòng ghi và lưu chỉ số đo lường trước khi xuất biên lai.");
                 return;
