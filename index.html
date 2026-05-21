@@ -111,6 +111,28 @@ function loadDataFromFirebase() {
 }
 // THÊM DÒNG NÀY ĐỂ GỌI HÀM KHI MỞ TRANG
 loadDataFromFirebase();
+       // 1. Import các hàm cần thiết từ Firebase
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    // 2. Khởi tạo Auth
+    const auth = getAuth();
+
+    // 3. Khai báo hàm handleLogin
+    window.handleLogin = function() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+
+        signInWithEmailAndPassword(auth, email, pass)
+          .then((userCredential) => {
+            alert("Đăng nhập thành công!");
+            // Đóng cửa sổ bằng cách thêm class hidden
+            document.getElementById('loginModal').classList.add('hidden'); 
+          })
+          .catch((error) => {
+            alert("Sai email hoặc mật khẩu! Vui lòng thử lại.");
+            console.error(error); // Kiểm tra lỗi chi tiết trong F12
+          });
+    } 
     </script>
     <style>
         /* Tối ưu in ấn hóa đơn */
@@ -2061,23 +2083,5 @@ function getPreviousWaterEnd(roomId, currentMonth) {
     // Nếu có, trả về số nước cuối kỳ của tháng trước, nếu không trả về 0
     return prevBilling ? prevBilling.waterEnd : 0;
 }
- import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-const auth = getAuth();
-
-window.handleLogin = function() {
-    const email = document.getElementById('loginEmail').value;
-    const pass = document.getElementById('loginPass').value;
-
-    signInWithEmailAndPassword(auth, email, pass)
-      .then((userCredential) => {
-        alert("Đăng nhập thành công!");
-        document.getElementById('loginModal').classList.add('hidden'); // Đóng cửa sổ
-        // Có thể gọi hàm renderAllViews() ở đây để làm mới dữ liệu
-      })
-      .catch((error) => {
-        alert("Sai email hoặc mật khẩu! Vui lòng thử lại.");
-      });
-}   
 </body>
 </html>
