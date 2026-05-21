@@ -102,7 +102,6 @@ apiKey: "AIzaSyBLCSiQpn8oEbXQEb5uot7KQQSXcM9CX-w",
   measurementId: "G-08TFQFP40M" 
 };
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app); // Khởi tạo Auth
 window.db = getDatabase(app);
 
 // Hàm login toàn cục
@@ -114,7 +113,8 @@ window.db = getDatabase(app);
         };
 
         // Kiểm tra đăng nhập
-        onAuthStateChanged(auth, (user) => {
+        const auth = getAuth(app); // Khởi tạo Auth
+     onAuthStateChanged(auth, (user) => {
     const loginModal = document.getElementById('loginModal');
     const mainApp = document.getElementById('mainApp');
 
