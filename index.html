@@ -69,30 +69,30 @@ const auth = getAuth(app); // Khởi tạo Auth
 // 2. Hàm Lưu dữ liệu đồng bộ
 window.saveAllDataToFirebase = function() {
     const dataToSave = localStorage.getItem('room_manager_data');
-    if (dataToSave) {
-        let rawData = JSON.parse(dataToSave);
+    if (!dataToSave) return;
 
-        // Hàm đệ quy để thay thế dấu '.' bằng '_' trong mọi cấp của dữ liệu
-        function cleanKeys(obj) {
-            if (typeof obj !== 'object' || obj === null) return obj;
-            let newObj = Array.isArray(obj) ? [] : {};
-            for (let key in obj) {
-                let cleanKey = key.replace(/\./g, '_'); // Thay dấu '.' thành '_'
-                newObj[cleanKey] = cleanKeys(obj[key]);
-            }
-            return newObj;
+    let rawData = JSON.parse(dataToSave);
+    
+    // Hàm này loại bỏ dấu chấm trong MỌI Key ở MỌI cấp độ
+    function sanitize(obj) {
+        if (typeof obj !== 'object' || obj === null) return obj;
+        let newObj = Array.isArray(obj) ? [] : {};
+        for (let key in obj) {
+            let cleanKey = key.replace(/\./g, '_'); // Chuyển P.101 thành P_101
+            newObj[cleanKey] = sanitize(obj[key]);
         }
-
-        let cleanedData = cleanKeys(rawData);
-
-        // Gửi dữ liệu đã làm sạch lên Firebase
-        return set(ref(db, 'system_data'), cleanedData)
-            .then(() => console.log("Đã đồng bộ dữ liệu sạch lên Firebase!"))
-            .catch(err => {
-                console.error("Lỗi đồng bộ:", err);
-                alert("Lỗi khi lưu dữ liệu: " + err.message);
-            });
+        return newObj;
     }
+
+    const cleanData = sanitize(rawData);
+
+    // Gửi dữ liệu đã sạch lên
+    set(ref(db, 'system_data'), cleanData)
+        .then(() => alert("Đã lưu thành công!"))
+        .catch(err => {
+            console.error("Lỗi Firebase:", err);
+            alert("Lỗi lưu dữ liệu (Kiểm tra F12): " + err.message);
+        });
 };
         // -----------------------------
 
