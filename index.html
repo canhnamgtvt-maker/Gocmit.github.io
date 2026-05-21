@@ -119,7 +119,9 @@ window.db = getDatabase(app);
         // Kiểm tra đăng nhập
         const auth = getAuth(app); // Khởi tạo Auth
      onAuthStateChanged(auth, (user) => {
-    const loginModal = document.getElementById('loginModal');
+    console.log("Trạng thái user:", user); // Dòng này sẽ hiện trong Console
+    // ... code cũ
+         const loginModal = document.getElementById('loginModal');
     const mainApp = document.getElementById('mainApp');
 
     if (user) {
